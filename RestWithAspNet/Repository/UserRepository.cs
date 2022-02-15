@@ -25,6 +25,24 @@ namespace RestWithAspNet.Repository
             return _context.Users.FirstOrDefault(u => u.UserName.Equals(user.UserName) && u.Password.Equals(pass));
         }
 
+        public User ValidadeCredentials(string userName)
+        {
+            return _context.Users.SingleOrDefault(u => (u.UserName.Equals(userName)));
+        }
+
+        public bool RevokeToken(string userName)
+        {
+            var user = _context.Users.SingleOrDefault(u => (u.UserName.Equals(userName)));
+            
+            if (user == null) return false;
+
+            user.RefreshToken = null;
+
+            _context.SaveChanges();
+
+            return true;
+        }
+
         public User RefreshUserInfo(User user)
         {
             if(!_context.Users.Any(u => u.Id.Equals(user.Id))) return null;
