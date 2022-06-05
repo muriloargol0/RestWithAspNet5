@@ -11,5 +11,6 @@ namespace RestWithAspNet.Business
         PersonVO Update(PersonVO person);
         void Delete(long id);
         List<PersonVO> FindAll();
+        PersonVO Disable(long id);
     }
 }

@@ -100,6 +100,24 @@ namespace RestWithAspNet.Controllers
             }
         }
 
+        [HttpPatch("{id}")]
+        [ProducesResponseType((200), Type = typeof(List<PersonVO>))]
+        [ProducesResponseType(204)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [TypeFilter(typeof(HyperMediaFilter))]
+        public IActionResult Patch([FromRoute] long id)
+        {
+            try
+            {
+                return Ok(_personBusiness.Disable(id));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
         [HttpDelete]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
