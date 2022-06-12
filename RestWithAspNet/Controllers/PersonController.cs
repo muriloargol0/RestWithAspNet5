@@ -30,17 +30,27 @@ namespace RestWithAspNet.Controllers
         [HttpGet("status")]
         public IActionResult Get() => Ok("It's working");   
 
-        [HttpGet]
+        [HttpGet("{sortDirection}/{pageSize}/{currentPage}")]
         [ProducesResponseType((200), Type = typeof(List<PersonVO>))]
         [ProducesResponseType(204)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [TypeFilter(typeof(HyperMediaFilter))]
-        public IActionResult GetAllPersons()
+        public IActionResult GetAllPersons(
+            [FromQuery] string name,
+            [FromRoute] string sortDirection,
+            [FromRoute] int pageSize,
+            [FromRoute] int currentPage
+            )
         {
             try
             {
-                return Ok(_personBusiness.FindAll());
+                return Ok(_personBusiness.FindWithPagedSearch(
+                    name,
+                    sortDirection,
+                    pageSize,
+                    currentPage
+                    ));
             }
             catch (Exception ex)
             {

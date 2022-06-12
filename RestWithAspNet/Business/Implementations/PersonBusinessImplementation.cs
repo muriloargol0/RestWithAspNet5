@@ -1,5 +1,6 @@
 ﻿using RestWithAspNet.Data.Converter.Implementation;
 using RestWithAspNet.Data.VO;
+using RestWithAspNet.Hypermedia.Utils;
 using RestWithAspNet.Model;
 using RestWithAspNet.Repository.Generic;
 using System.Collections.Generic;
@@ -57,6 +58,44 @@ namespace RestWithAspNet.Business.Implementations
         public List<PersonVO> FindByName(string firstName, string lastName)
         {
             return _converter.Parse(_repository.FindByName(firstName, lastName));
+        }
+
+        public PagedSearchVO<PersonVO> FindWithPagedSearch(string name, string sortDirection, int pageSize, int currentPage)
+        {
+            var sort = !string.IsNullOrWhiteSpace(sortDirection)
+                && sortDirection.Equals("desc") ? "asc" : "desc";
+            var size = pageSize < 1 ? 10 : pageSize;
+            var offset = currentPage > 0 ? (currentPage - 1) * size : 0;
+
+            string query = @$" select
+                * 
+                from 
+                    person p
+                where 1 = 1 ";
+
+            var countQuery = "select count(*) from person p where 1 = 1";
+
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                var whereName = $" and p.first_name like '%{name}%'";
+                query += whereName;
+                countQuery += whereName;
+            }
+                    
+            query += $"order by p.first_name {sort} limit {size} offset {offset}";
+
+            var persons = _repository.FindWithPagedSearch(query);
+
+            int totalResults = _repository.GetCount(countQuery);
+
+            return new PagedSearchVO<PersonVO>
+            {
+                CurrentPage = currentPage,
+                List = _converter.Parse(persons),
+                PageSize = size,
+                SortDirection = sort,
+                TotalResults = totalResults
+            };
         }
     }
 }
