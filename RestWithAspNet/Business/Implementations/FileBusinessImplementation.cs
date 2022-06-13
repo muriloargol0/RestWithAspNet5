@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 
 namespace RestWithAspNet.Business.Implementations
 {
-    public class FileBusiness : IFileBusiness
+    public class FileBusinessImplementation : IFileBusiness
     {
         private readonly string _basePath;
         private readonly IHttpContextAccessor _context;
 
-        public FileBusiness(IHttpContextAccessor context)
+        public FileBusinessImplementation(IHttpContextAccessor context)
         {
             _context = context;
             _basePath = string.Concat(Directory.GetCurrentDirectory(), "\\UploadDir\\");
@@ -19,16 +19,19 @@ namespace RestWithAspNet.Business.Implementations
 
         public byte[] GetFile(string fileName)
         {
-            throw new System.NotImplementedException();
+            var filePath = string.Concat(_basePath, fileName);
+            
+            return File.ReadAllBytes(filePath);
         }
 
-        public async Task<List<FileDetailVO>> SaveFilesToDisk(IList<IFormFile> file)
+        public async Task<List<FileDetailVO>> SaveFilesToDisk(IList<IFormFile> files)
         {
-            List<FileDetailVO> result = new List<FileDetailVO>();
+            var result = new List<FileDetailVO>();
 
-            Parallel.ForEach(file, i => {
-                result.Add(SaveFileToDisk(i).Result);
-            });
+            foreach (var file in files)
+            {
+                result.Add(await SaveFileToDisk(file));
+            }
 
             return result;
         }
@@ -53,7 +56,7 @@ namespace RestWithAspNet.Business.Implementations
                     var destination = Path.Combine(_basePath, "", docName);
                     fileDetail.DocumentName = docName;
                     fileDetail.DocumentType = fileType;
-                    fileDetail.DocUrl = Path.Combine(baseUrl.ToString(), "/api/file", fileDetail.DocumentName);
+                    fileDetail.DocUrl = Path.Combine($"{baseUrl}/api/file/{fileDetail.DocumentName}");
 
                     using (var stream = new FileStream(destination, FileMode.Create))
                     {
