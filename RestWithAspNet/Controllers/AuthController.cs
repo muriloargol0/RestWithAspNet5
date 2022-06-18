@@ -22,13 +22,20 @@ namespace RestWithAspNet.Controllers
         [AllowAnonymous]
         public IActionResult Signin([FromBody] UserVO user)
         {
-            if(user == null) return BadRequest("Invalid client request!");
+            try
+            {
+                if (user == null) return BadRequest("Invalid client request!");
 
-            var token = _loginBusiness.ValidateCredentials(user);
+                var token = _loginBusiness.ValidateCredentials(user);
 
-            if(token == null) return Unauthorized();
+                if (token == null) return Unauthorized();
 
-            return Ok(token);
+                return Ok(token);
+            }
+            catch (System.Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpPost("refresh")]
